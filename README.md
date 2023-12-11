@@ -5,7 +5,7 @@ MySQL, Hibernate, Redis, Docker.
 
 <!--Установка-->
 ## Софт
-1. IDEA Ultimate (у кого закончился ключ – пишите в слаке Роману)
+1. IDEA Ultimate
 2. Workbench (или любой другой клиент для MySQL)
 3. Docker
 4. redis-insight – опционально (http://localhost:8001/redis-stack/browser)
