@@ -13,7 +13,7 @@ MySQL, Hibernate, Redis, Docker.
 ## Установка
 1. Настроить докер.
 2. Запустить MySQL сервер как докер-контейнер:
-   - docker run --name mysql -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root --restart unless-stopped -v mysql:/var/lib/mysql mysql:8
+   - docker run -d --name mysql -e MYSQL_ROOT_PASSWORD=root -v C:\docker:/var/lib/mysql -p 3306:3306 mysql:8.0
 3. Открыть [дамп-файл](./dump-hibernate-final.sql) и развернуть его.
 4. Создать проект в Идее, добавить зависимости maven   
 5. Это maven проект со всеми необходимыми зависимостями (hibernate-core-jakarta, mysql-connector-java, p6spy, lettuce-core, jackson-databind).

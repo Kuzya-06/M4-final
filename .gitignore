@@ -1,6 +1,9 @@
 ### Java template
 
 target/
+MySQLDocker.txt
+RedisDocker.txt
+help.sql
 
 # Compiled class file
 *.class
