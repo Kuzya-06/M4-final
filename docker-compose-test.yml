@@ -1,0 +1,12 @@
+version: '3.1'
+
+services:
+  final-db:
+    image: mysql:8.0
+    restart: always
+    container_name: final-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: 'world'
+      MYSQL_ROOT_PASSWORD: 'root'
