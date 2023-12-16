@@ -1,5 +1,6 @@
 package ru.kuznetsov.dao;
 
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.Query;
 import ru.kuznetsov.domain.City;
@@ -31,6 +32,16 @@ public class CityDAO {
         Query<City> query = sessionFactory.getCurrentSession().createQuery("select c from City c join fetch c.country where c.id = :ID", City.class);
         query.setParameter("ID", id);
         return query.getSingleResult();
+    }
+
+    public City updateCity(Integer id, Integer populationUpdate){
+        Session session = sessionFactory.getCurrentSession();
+        session.beginTransaction();
+        City city = session.get(City.class, id);
+        city.setPopulation(populationUpdate);
+        session.saveOrUpdate(city);
+        session.getTransaction().commit();
+        return city;
     }
 
 }

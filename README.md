@@ -1,7 +1,7 @@
 # Проект по теме: SQL, JDBC и Hibernate
 JRU Uniform - М4 - финальный проект
 ## Технологии
-MySQL, Hibernate, Redis, Docker.
+Java, Maven, MySQL, Hibernate, p6spy, Redis, Docker, Junit, Log4j 2
 
 <!--Установка-->
 ## Софт
@@ -15,9 +15,13 @@ MySQL, Hibernate, Redis, Docker.
 2. Запустить MySQL сервер как докер-контейнер:
    - docker run -d --name mysql -e MYSQL_ROOT_PASSWORD=root -v C:\docker:/var/lib/mysql -p 3306:3306 mysql:8.0
 3. Открыть [дамп-файл](./dump-hibernate-final.sql) и развернуть его.
-4. Создать проект в Идее, добавить зависимости maven   
+4. Создать проект в Идее  
 5. Это maven проект со всеми необходимыми зависимостями (hibernate-core-jakarta, mysql-connector-java, p6spy, lettuce-core, jackson-databind).
 6. Подключи в Идее БД. Схема world.
-7. Запускать Main.java
-8. Схема выглядит примерно так:
+7. Запустить Redis сервер как докер-контейнер:
+   - docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+8. После запуска можно посмотреть список запущенных контейнеров. Для этого выполни команду:
+   - docker container ls
+9. Тестировать скорость получения одних и тех же данных из MySQL и Redis можно в Main и MainTest. 
+10. Схема выглядит примерно так:
 ![Shema](./worldDiagram2.png)

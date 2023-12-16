@@ -10,6 +10,8 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.kuznetsov.dao.CityDAO;
 import ru.kuznetsov.dao.CountryDAO;
 import ru.kuznetsov.domain.City;
@@ -18,16 +20,14 @@ import ru.kuznetsov.domain.CountryLanguage;
 import ru.kuznetsov.redis.CityCountry;
 import ru.kuznetsov.redis.Language;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
 
 public class Main {
 
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
     private final SessionFactory sessionFactory;
     private final RedisClient redisClient;
 
@@ -46,6 +46,7 @@ public class Main {
     }
 
     private SessionFactory prepareRelationalDb() {
+        logger.info("Create SessionFactory");
         final SessionFactory sessionFactory;
         Properties properties = new Properties();
         properties.put(Environment.DIALECT, "org.hibernate.dialect.MySQL8Dialect");
@@ -67,6 +68,7 @@ public class Main {
     }
 
     private RedisClient prepareRedisClient() {
+        logger.info("preparedRedisClient");
         RedisClient redisClient = RedisClient.create(RedisURI.create("localhost", 6379));
         try (StatefulRedisConnection<String, String> connection = redisClient.connect()) {
             System.out.println("\nConnected to Redis\n");
@@ -75,6 +77,7 @@ public class Main {
     }
 
     private void shutdown() {
+        logger.info("shutdown");
         if (nonNull(sessionFactory)) {
             sessionFactory.close();
         }
@@ -83,7 +86,8 @@ public class Main {
         }
     }
 
-    private List<City> fetchData(Main main) {
+    public List<City> fetchData(Main main) {
+        logger.info("fetchData begin");
         try (Session session = main.sessionFactory.getCurrentSession()) {
             List<City> allCities = new ArrayList<>();
             session.beginTransaction();
@@ -94,6 +98,7 @@ public class Main {
                 allCities.addAll(main.cityDAO.getItems(i, step));
             }
             session.getTransaction().commit();
+            logger.info("fetchData end");
             return allCities;
         }
     }
@@ -121,13 +126,18 @@ public class Main {
         main.testMysqlData(ids);
         long stopMysql = System.currentTimeMillis();
 
-        System.out.printf("%s:\t%d ms\n", "Redis", (stopRedis - startRedis));
-        System.out.printf("%s:\t%d ms\n", "MySQL", (stopMysql - startMysql));
+        String redis = String.format("%s:\t%d ms\n", "Redis", (stopRedis - startRedis));
+        String mySQL = String.format("%s:\t%d ms\n", "MySQL", (stopMysql - startMysql));
+        logger.info(redis);
+        logger.info(mySQL);
+// 593321
+        main.updateCityByPopulation(66, 999999);
 
         main.shutdown();
     }
 
-    private void pushToRedis(List<CityCountry> data) {
+
+    public void pushToRedis(List<CityCountry> data) {
         try (StatefulRedisConnection<String, String> connection = redisClient.connect()) {
             RedisStringCommands<String, String> sync = connection.sync();
             for (CityCountry cityCountry : data) {
@@ -166,8 +176,8 @@ public class Main {
         }
     }
 
-    private List<CityCountry> transformData(List<City> cities) {
-
+    public List<CityCountry> transformData(List<City> cities) {
+        logger.info("transformData begin");
         return cities.stream().map(city -> {
             CityCountry res = new CityCountry();
             res.setId(city.getId());
@@ -195,5 +205,26 @@ public class Main {
 
             return res;
         }).collect(Collectors.toList());
+
     }
+
+    // для проверки работоспособности Dockerfile
+    public void updateCityByPopulation(Integer id, Integer populationUpdate) {
+        City cityUp = cityDAO.updateCity(id, populationUpdate);
+        logger.info("Name City Update: "+cityUp.getName());
+        CityCountry cityCountry;
+        try (StatefulRedisConnection<String, String> connection = redisClient.connect()) {
+            RedisStringCommands<String, String> sync = connection.sync();
+
+            String value = sync.get(String.valueOf(id));
+            try {
+                cityCountry = mapper.readValue(value, CityCountry.class);
+                cityCountry.setCountryPopulation(populationUpdate);
+                sync.set(value, mapper.writeValueAsString(cityCountry));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }
