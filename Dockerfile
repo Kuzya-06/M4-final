@@ -14,5 +14,3 @@ ADD ${JAR_MANIFEST} META-INF/
 
 ENTRYPOINT ["java","-jar","/app.jar"]
 
-
-# java -jar "d:\Rush\ProjectRush\Temp\final-1.0-SNAPSHOT.jar"
