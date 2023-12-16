@@ -11,6 +11,7 @@
     <properties>
         <maven.compiler.source>18</maven.compiler.source>
         <maven.compiler.target>18</maven.compiler.target>
+        <jackson.version>2.15.1</jackson.version>
     </properties>
 
 
@@ -18,13 +19,13 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.30</version>
+            <version>8.0.33</version>
         </dependency>
 
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core-jakarta</artifactId>
-            <version>5.6.14.Final</version>
+            <version>5.6.15.Final</version>
         </dependency>
 
         <dependency>
@@ -33,18 +34,28 @@
             <version>3.9.1</version>
         </dependency>
 
-<!--// Java клиент для работы с Redis-->
+        <!--// Java клиент для работы с Redis-->
         <dependency>
             <groupId>io.lettuce</groupId>
             <artifactId>lettuce-core</artifactId>
             <version>6.2.3.RELEASE</version>
         </dependency>
 
-<!--        зависимость для использования ObjectMapper (для преобразования данных для их хранения в Redis (ключ-значение типа String))-->
+        <!--        зависимость для использования ObjectMapper (для преобразования данных для их хранения в Redis (ключ-значение типа String))-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.15.1</version>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
 
         <!--        Jupiter-->
@@ -62,8 +73,81 @@
             <version>2.20.0</version>
         </dependency>
 
-
     </dependencies>
+
+
+    <build>
+
+        <resources>
+            <resource>
+                <directory>${project.build.directory}/dependency</directory>
+                <targetPath>lib</targetPath>
+            </resource>
+        </resources>
+
+        <plugins>
+            <!-- Настройка компиляции проекта -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <!--***********************************************-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.1.1</version>
+            </plugin>
+
+            <!--***********************************************-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <archive>
+                        <!-- Если надо конфигурировать манифест, то здесь -->
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <!-- путь к зависимостям относительно запускаемого jar файла -->
+                            <!-- ВСЕ ЗАВИСИМОСТИ ДОЛЖНЫ БУДУТ ПОСТАВЛЯТЬСЯ С ТВОИМ jar приложением.  -->
+                            <classpathPrefix>lib/</classpathPrefix>
+                            <classpathLayoutType>simple</classpathLayoutType>
+                            <mainClass>ru.kuznetsov.Main</mainClass>
+                        </manifest>
+                        <manifestEntries>
+
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <!--***********************************************-->
+            <!-- Копирование зависимостей в папку libs/ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <!-- Все зависимости которые нужны для работы твоего приложения будут лежать здесь -->
+                    <outputDirectory>${project.build.directory}/dependency/</outputDirectory>
+                    <includeScope>compile</includeScope>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 
 </project>
